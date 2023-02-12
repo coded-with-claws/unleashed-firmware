@@ -4,15 +4,16 @@
 #include "one_wire_host_timing.h"
 
 struct OneWireHost {
-    // global search state
-    unsigned char saved_rom[8];
+    const GpioPin* gpio_pin;
+    unsigned char saved_rom[8]; /** < global search state */
     uint8_t last_discrepancy;
     uint8_t last_family_discrepancy;
     bool last_device_flag;
 };
 
-OneWireHost* onewire_host_alloc() {
+OneWireHost* onewire_host_alloc(const GpioPin* gpio_pin) {
     OneWireHost* host = malloc(sizeof(OneWireHost));
+    host->gpio_pin = gpio_pin;
     onewire_host_reset_search(host);
     return host;
 }

@@ -1,12 +1,14 @@
-#include <archive/views/archive_browser_view.h>
 #include "archive_files.h"
 #include "archive_apps.h"
 #include "archive_browser.h"
+#include "../views/archive_browser_view.h"
+
 #include <core/common_defines.h>
 #include <core/log.h>
-#include "gui/modules/file_browser_worker.h"
+#include <gui/modules/file_browser_worker.h>
 #include <fap_loader/fap_loader_app.h>
 #include <math.h>
+#include <furi_hal.h>
 
 static void
     archive_folder_open_cb(void* context, uint32_t item_cnt, int32_t file_idx, bool is_root) {
@@ -64,7 +66,13 @@ static void
         archive_add_file_item(browser, is_folder, furi_string_get_cstr(item_path));
     } else {
         with_view_model(
-            browser->view, ArchiveBrowserViewModel * model, { model->list_loading = false; }, true);
+            browser->view,
+            ArchiveBrowserViewModel * model,
+            {
+                files_array_sort(model->files);
+                model->list_loading = false;
+            },
+            true);
     }
 }
 
@@ -139,7 +147,7 @@ void archive_update_focus(ArchiveBrowserView* browser, const char* target) {
     archive_get_items(browser, furi_string_get_cstr(browser->path));
 
     if(!archive_file_get_array_size(browser) && archive_is_home(browser)) {
-        archive_switch_tab(browser, TAB_RIGHT);
+        archive_switch_tab(browser, TAB_LEFT);
     } else {
         with_view_model(
             browser->view,
@@ -206,7 +214,7 @@ void archive_file_array_rm_selected(ArchiveBrowserView* browser) {
         false);
 
     if((items_cnt == 0) && (archive_is_home(browser))) {
-        archive_switch_tab(browser, TAB_RIGHT);
+        archive_switch_tab(browser, TAB_LEFT);
     }
 
     archive_update_offset(browser);
@@ -454,6 +462,13 @@ void archive_switch_tab(ArchiveBrowserView* browser, InputKey key) {
         tab = ((tab - 1) + ArchiveTabTotal) % ArchiveTabTotal;
     } else {
         tab = (tab + 1) % ArchiveTabTotal;
+    }
+    if(tab == ArchiveTabInternal && !furi_hal_rtc_is_flag_set(FuriHalRtcFlagDebug)) {
+        if(key == InputKeyLeft) {
+            tab = ((tab - 1) + ArchiveTabTotal) % ArchiveTabTotal;
+        } else {
+            tab = (tab + 1) % ArchiveTabTotal;
+        }
     }
 
     browser->is_root = true;

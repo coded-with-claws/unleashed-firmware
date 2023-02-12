@@ -1,28 +1,8 @@
 ### New changes
-* SubGHz: **Somfy Telis Encoder** (PR #289 | by @assasinfil & @TQMatvey)
-* SubGHz: Add 350Mhz to default range
-* Plugins -> Solitaire: Fix for solitaire card placement bug (PR #253 | by @teeebor)
-* Plugins -> UniTemp (New sensors added), TOTP - Updated to latest commits
-* Plugins -> Added Text Viewer [(by kowalski7cc & kyhwana)](https://github.com/kowalski7cc/flipper-zero-text-viewer/tree/refactor-text-app)
-* Plugins -> Added **UART Terminal** [(by cool4uma)](https://github.com/cool4uma/UART_Terminal/tree/main)
-* Plugins -> Added **ProtoView** [(by antirez)](https://github.com/antirez/protoview)
-* Plugins -> WAV Player - Replaced with fixed and improved version by [@LTVA1](https://github.com/LTVA1/wav_player)
-* Clock: Fix 12AM was displaying as 00 AM (PR #288 | by @Smileycathy1128)
-* Infrared: Allow disabling automatic signal decoding (aka Learn RAW) - works only when debug enabled (PR #273 | by @darmiel)
-* Infrared: Update universal remote assets (by @amec0e)
-* Desktop: New battery display (Bar %) - (PR #278 | by @Fasjeit)
-* BadUSB: Adding CZ keyboard layout (PR #255 | by @peoblouk)
-* OFW: Various improvements: Toolbox, Updater and Unit Tests. 
-* OFW: Fix typos in source code
-* OFW: Add the sleigh ride animation
-* OFW: Documentation: edit texts, markdown linting 
-* OFW: Change broken BadUSB link to Hak5 duckyscript quick reference webpage
-* OFW: **Per protocol signal repeat count** - **Fixes issues with Sony remotes with SIRC protocol (bruteforce also fixed now!)**
-* OFW: Add the ability to turn pages in infrared 
-* OFW: **BadUSB backspace/delete fix**
-* OFW: relocate R_ARM_CALL
-* OFW: fbt: PVS support
-* OFW: fbt: removed DEBUG_TOOLS & FAP_EXAMPLES flags
+* iButton: **Temp Fix of non working emulation on Metakom and Cyfral protocols**
+* Archive and FileBrowser: **Sort files and folders alphabetically.** Added a "Internal" tab to the Browser (only in DEBUG mode), other misc changes (by @ClaraCrazy and @Willy-JL | PR #327)
+* SubGHz: Custom modulation for lrs pagers and added frequency 467.75 to default list (by @jbohack | PR #328)
+* SubGHz: **Small fixes in SubGHz HAL**
 
 #### [🎲 Download latest extra apps pack](https://download-directory.github.io/?url=https://github.com/xMasterX/unleashed-extra-pack/tree/main/apps)
 
