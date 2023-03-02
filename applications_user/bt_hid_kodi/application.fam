@@ -12,5 +12,5 @@ App(
     order=10,
     fap_icon="bt_remote_10px.png",
     fap_icon_assets="assets",
-    fap_category="Tools",
+    fap_category="Misc",
 )
