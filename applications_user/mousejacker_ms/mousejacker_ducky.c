@@ -159,6 +159,13 @@ static void build_hid_packet(uint8_t mod, uint8_t hid, uint8_t* payload) {
     payload[9] = hid;
     sequence(payload);
     checksum(payload, MICROSOFT_HID_TEMPLATE_SIZE);
+    /*uint8_t byte;
+    uint8_t i;
+    FURI_LOG_I(TAG, "build_hid_packet");
+    for(i=0; i < MICROSOFT_HID_TEMPLATE_SIZE; i++) {
+	byte = payload[i];
+        FURI_LOG_I(TAG, "%02x ", byte);
+    }*/
 }
 
 static void send_hid_packet(
