@@ -1,5 +1,7 @@
 Custom edits:
 - Application Bluetooth remote Keynote for Kodi (original app + feature: long press on OK to switch between "Space" and "Return" (useful for Kodi to navigate the menus))
+- Application wifi_deauther (Timmotools) for firmware v2
+- Applications NRF Sniff & Mousejacker for Microsoft mouse (hardcoded)
 
 <h3 align="center">
 <a href="https://github.com/DarkFlippers/unleashed-firmware">

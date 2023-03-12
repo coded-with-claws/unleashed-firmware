@@ -8,19 +8,14 @@ static const char ducky_cmd_repeat[] = {"REPEAT "};
 // Bytes 0 to 3 are hardcoded for my specific mouse (they should be known after the sniffing but addresses.txt doesn't save them)
 static uint8_t MICROSOFT_HID_TEMPLATE[] =
     {0x08, 0x90, 0x19, 0x01, 0x00, 0x00, 67, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-//static uint8_t LOGITECH_HELLO[] = {0x00, 0x4F, 0x00, 0x04, 0xB0, 0x10, 0x00, 0x00, 0x00, 0xED};
-//static uint8_t LOGITECH_KEEPALIVE[] = {0x00, 0x40, 0x00, 0x55, 0x6B};
 
 uint8_t prev_hid = 0;
 uint8_t sequence_num = 0;
 
 #define RT_THRESHOLD 50
-//#define LOGITECH_MIN_CHANNEL 2
-#define MICROSOFT_MIN_CHANNEL 49
+#define MICROSOFT_MIN_CHANNEL 2
 #define MICROSOFT_MAX_CHANNEL 83
-//#define LOGITECH_KEEPALIVE_SIZE 5
 #define MICROSOFT_HID_TEMPLATE_SIZE 19
-//#define LOGITECH_HELLO_SIZE 10
 #define TAG "mousejacker_ducky"
 
 MJDuckyKey mj_ducky_keys[] = {{" ", 44, 0},         {"!", 30, 2},          {"\"", 52, 2},
