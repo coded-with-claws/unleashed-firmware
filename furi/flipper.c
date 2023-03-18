@@ -33,7 +33,7 @@ void flipper_init() {
     FURI_LOG_I(TAG, "Boot mode %d, starting services", furi_hal_rtc_get_boot_mode());
 
     for(size_t i = 0; i < FLIPPER_SERVICES_COUNT; i++) {
-        FURI_LOG_I(TAG, "Starting service %s", FLIPPER_SERVICES[i].name);
+        FURI_LOG_D(TAG, "Starting service %s", FLIPPER_SERVICES[i].name);
 
         FuriThread* thread = furi_thread_alloc_ex(
             FLIPPER_SERVICES[i].name,
@@ -41,6 +41,7 @@ void flipper_init() {
             FLIPPER_SERVICES[i].app,
             NULL);
         furi_thread_mark_as_service(thread);
+        furi_thread_set_appid(thread, FLIPPER_SERVICES[i].appid);
 
         furi_thread_start(thread);
     }

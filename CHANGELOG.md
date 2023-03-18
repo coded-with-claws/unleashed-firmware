@@ -1,27 +1,11 @@
 ### New changes
-* If you have copied apps into `apps` folder - remove `apps` folder on your microSD before installing this release to avoid issues!
-* SubGHz: Fixed timings for static CAME 12 bit and other types (fixed issue #280)
-* SubGHz: Fix #370 and fix other protocol counter issues
-* SubGHz: **Custom buttons for Nice Flor S / Somfy Telis (+Programming mode)** - now you can use arrow buttons to send signal with different button code
-* SubGHz: Somfy Telis -> Add manually (create new remote, now with programming button (Prog / 0x8) you can write it into receiver)
-* SubGHz: BFT Mitto -> Add manually (create new remote, now with programming button (0xF) you can write it into receiver)
-* SubGHz: Nice One -> Add manually (programming is possible using regular button)
-* SubGHz: More precise settings for debug counter increase value
-* Plugins -> MouseJacker: Features, Fixes and improvements (by @MatthisC | PR #366)
-* Plugins -> HC-SR04: Improve accuracy by measuring microseconds (by @clashlab | PR #367)
-* OFW PR: 2441 - Infrared: Fix hangups on repeated button press (by gsurkov)
-* OFW PR: 2440 - Fix navigation on unsupported card types (by Astrrra)
-* OFW: BadUSB UI fixes
-* OFW: Plugins: move to designated categories -> **We moved some plugins to new categories too**
-* OFW: Drivers: remove excessive check in bq25896 and make PVS happy
-* OFW: FuriHal, Power, UnitTests: fix, rename battery charging voltage limit API -> **Breaking API change, api was changed from 14.x to 15.x** 
-**(this will make your manually copied plugins not work, update them in same way you installed them, or delete `apps` folder and then install firmware, if you using extra pack builds (with `e` in version) all apps in _Extra will be updated automatically)**
-
-* OFW: Fix incorrect type choise condition in image compressor
-* OFW: Updater: handle storage errors when removing files, fix folder remove routine, prevent unused services from starting
-* OFW: Unify power info, power debug, and device_info into one info command
-* OFW: SD Cache: moved to diskio layer, invalidation in case of error
-* OFW: Picopass: factory key support, minor code cleanup
+* iButton: Add support for DS1420 (not fully tested)
+* Desktop: Option to set Tertiary favourite app (Hold right arrow on desktop) - **Desktop settings (pin code, favourite app, autolock time) will be resetted!!! Only one time after installing - due to changes in settings structure, after installing of this release desktop settings will not be reset with next release**
+* Desktop: Ability to disable favourite app (use last element in a main list `None (disable)`)
+* Desktop: Fix issue #387 (Ok button was showing invalid file error in dummy mode)
+* OFW PR: SD Driver: reinit sd card on error (by DrZlo13 | OFW PR 2493)
+* OFW PR: iButton -> Fix a typo: use right shift instead of greater than (by gsurkov | OFW PR 2506)
+* OFW: Optimize trailing slash check
 
 #### [🎲 Download latest extra apps pack](https://github.com/xMasterX/unleashed-extra-pack/archive/refs/heads/main.zip)
 
@@ -30,7 +14,7 @@
 [-> Download qFlipper (official link)](https://flipperzero.one/update)
 
 ## Please support development of the project
-* Boosty: https://boosty.to/mmxdev
+* **Boosty** (patreon alternative): https://boosty.to/mmxdev
 * Ko-Fi: https://ko-fi.com/masterx
 * cloudtips (only RU payments accepted): https://pay.cloudtips.ru/p/7b3e9d65
 * YooMoney (only RU payments accepted): https://yoomoney.ru/fundraise/XA49mgQLPA0.221209
