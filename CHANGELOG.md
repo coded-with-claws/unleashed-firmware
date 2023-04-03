@@ -1,13 +1,31 @@
 ### New changes
-* iButton: Add support for DS1420 (not fully tested)
-* Desktop: Option to set Tertiary favourite app (Hold right arrow on desktop) - **Desktop settings (pin code, favourite app, autolock time) will be resetted!!! Only one time after installing - due to changes in settings structure, after installing of this release desktop settings will not be reset with next release**
-* Desktop: Ability to disable favourite app (use last element in a main list `None (disable)`)
-* Desktop: Fix issue #387 (Ok button was showing invalid file error in dummy mode)
-* OFW PR: SD Driver: reinit sd card on error (by DrZlo13 | OFW PR 2493)
-* OFW PR: iButton -> Fix a typo: use right shift instead of greater than (by gsurkov | OFW PR 2506)
-* OFW: Optimize trailing slash check
+* SubGHz: Support for Allmatic(reads as Beninca), also fix Beninca protocol 
+* SubGHz: Allmatic -> Add Manually
+* Plugins: Show External CC1101 module status in Weather Station and in POCSAG Pager plugins
+* Plugins: Update **TOTP (Authenticator)** [(by akopachov)](https://github.com/akopachov/flipper-zero_authenticator) (Fixes BT issues)
+* SubGHz: Fix false detections of StarLine 72bit, flipper can decode only 64bit
+* SubGHz: ScherKhan, more informative messages instead of "Unknown", may be not correct, because we guessing type by bits
+* SubGHz: Clear code in "Add Manually" scene (by @gid9798 | PR #403)
+* SubGHz: Unification of custom buttons (by @gid9798 | PR #405)
+* Infrared: Universal remote assets updated (by @amec0e | PR #404)
+* Plugins: GPS NMEA (UART) modifications
+```
+- Ability to change baudrate using Up button, hold button to switch between baudrates (9600, 57600, 115200) (i set 57600 as default)
+- Ok button will set backlight to always on mode, to disable press ok button again (it will restore default settings after app exit too)
+- Long press Right button to change speed from knots to kilometers per hour
+- Exit from app using long press on back button instead of short press, may be useful in case you want to turn backlight on and accidentally click back
+```
+* OFW PR 2536: Fixing parsing troika card number (by @achistyakov)
+* OFW PR 2548: Picopass Add more detail to saved info screen (by @bettse)
+* OFW PR 2544: added WAIT_FOR_BUTTON_PRESS functionality to badusb (by @p4p1) 
+* OFW PR 2475: AVR ISP Programmer FAP (by @Skorpionm) (+ AVR ISP enable 5v power on start fix) (beta test, report found issues in our repo)
+* OFW: FatFS: use rtc for timestamping
+* OFW: RPC: increase max message size
+* OFW: Picopass: Elite progress
+* OFW: Improved thread lifecycle
+* OFW: View Model: recursive mutex
 
-#### [🎲 Download latest extra apps pack](https://github.com/xMasterX/unleashed-extra-pack/archive/refs/heads/main.zip)
+#### [🎲 Download latest extra apps pack](https://github.com/xMasterX/all-the-plugins/archive/refs/heads/main.zip)
 
 [-> How to install firmware](https://github.com/DarkFlippers/unleashed-firmware/blob/dev/documentation/HowToInstall.md)
 

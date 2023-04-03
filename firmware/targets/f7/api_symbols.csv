@@ -1,5 +1,5 @@
 entry,status,name,type,params
-Version,+,18.2,,
+Version,+,20.1,,
 Header,+,applications/services/bt/bt_service/bt.h,,
 Header,+,applications/services/cli/cli.h,,
 Header,+,applications/services/cli/cli_vcp.h,,
@@ -63,7 +63,6 @@ Header,+,firmware/targets/furi_hal_include/furi_hal.h,,
 Header,+,firmware/targets/furi_hal_include/furi_hal_bt.h,,
 Header,+,firmware/targets/furi_hal_include/furi_hal_bt_hid.h,,
 Header,+,firmware/targets/furi_hal_include/furi_hal_bt_serial.h,,
-Header,+,firmware/targets/furi_hal_include/furi_hal_compress.h,,
 Header,+,firmware/targets/furi_hal_include/furi_hal_cortex.h,,
 Header,+,firmware/targets/furi_hal_include/furi_hal_crypto.h,,
 Header,+,firmware/targets/furi_hal_include/furi_hal_debug.h,,
@@ -121,6 +120,9 @@ Header,+,lib/flipper_application/plugins/composite_resolver.h,,
 Header,+,lib/flipper_application/plugins/plugin_manager.h,,
 Header,+,lib/flipper_format/flipper_format.h,,
 Header,+,lib/flipper_format/flipper_format_i.h,,
+Header,+,lib/ibutton/ibutton_key.h,,
+Header,+,lib/ibutton/ibutton_protocols.h,,
+Header,+,lib/ibutton/ibutton_worker.h,,
 Header,+,lib/infrared/encoder_decoder/infrared.h,,
 Header,+,lib/infrared/worker/infrared_transmit.h,,
 Header,+,lib/infrared/worker/infrared_worker.h,,
@@ -170,12 +172,8 @@ Header,+,lib/mlib/m-rbtree.h,,
 Header,+,lib/mlib/m-tuple.h,,
 Header,+,lib/mlib/m-variant.h,,
 Header,+,lib/nfc/nfc_device.h,,
-Header,+,lib/one_wire/ibutton/ibutton_key.h,,
-Header,+,lib/one_wire/ibutton/ibutton_protocols.h,,
-Header,+,lib/one_wire/ibutton/ibutton_worker.h,,
 Header,+,lib/one_wire/maxim_crc.h,,
 Header,+,lib/one_wire/one_wire_host.h,,
-Header,+,lib/one_wire/one_wire_host_timing.h,,
 Header,+,lib/one_wire/one_wire_slave.h,,
 Header,+,lib/print/wrappers.h,,
 Header,+,lib/subghz/blocks/const.h,,
@@ -196,7 +194,7 @@ Header,+,lib/toolbox/args.h,,
 Header,+,lib/toolbox/crc32_calc.h,,
 Header,+,lib/toolbox/dir_walk.h,,
 Header,+,lib/toolbox/float_tools.h,,
-Header,+,lib/toolbox/hmac_sha256.h,,
+Header,+,lib/toolbox/hex.h,,
 Header,+,lib/toolbox/manchester_decoder.h,,
 Header,+,lib/toolbox/manchester_encoder.h,,
 Header,+,lib/toolbox/md5.h,,
@@ -205,6 +203,7 @@ Header,+,lib/toolbox/pretty_format.h,,
 Header,+,lib/toolbox/protocols/protocol_dict.h,,
 Header,+,lib/toolbox/random_name.h,,
 Header,+,lib/toolbox/saved_struct.h,,
+Header,+,lib/toolbox/sha256.h,,
 Header,+,lib/toolbox/stream/buffered_file_stream.h,,
 Header,+,lib/toolbox/stream/file_stream.h,,
 Header,+,lib/toolbox/stream/stream.h,,
@@ -504,10 +503,6 @@ Function,-,acosl,long double,long double
 Function,-,aligned_alloc,void*,"size_t, size_t"
 Function,+,aligned_free,void,void*
 Function,+,aligned_malloc,void*,"size_t, size_t"
-Function,-,alutech_get_custom_btn,uint8_t,
-Function,-,alutech_get_original_btn,uint8_t,
-Function,-,alutech_reset_original_btn,void,
-Function,-,alutech_set_btn,void,uint8_t
 Function,-,arc4random,__uint32_t,
 Function,-,arc4random_buf,void,"void*, size_t"
 Function,-,arc4random_uniform,__uint32_t,__uint32_t
@@ -708,6 +703,13 @@ Function,+,composite_api_resolver_add,void,"CompositeApiResolver*, const ElfApiI
 Function,+,composite_api_resolver_alloc,CompositeApiResolver*,
 Function,+,composite_api_resolver_free,void,CompositeApiResolver*
 Function,+,composite_api_resolver_get,const ElfApiInterface*,CompositeApiResolver*
+Function,-,compress_alloc,Compress*,uint16_t
+Function,-,compress_decode,_Bool,"Compress*, uint8_t*, size_t, uint8_t*, size_t, size_t*"
+Function,-,compress_encode,_Bool,"Compress*, uint8_t*, size_t, uint8_t*, size_t, size_t*"
+Function,-,compress_free,void,Compress*
+Function,-,compress_icon_alloc,CompressIcon*,
+Function,-,compress_icon_decode,void,"CompressIcon*, const uint8_t*, uint8_t**"
+Function,-,compress_icon_free,void,CompressIcon*
 Function,-,copysign,double,"double, double"
 Function,-,copysignf,float,"float, float"
 Function,-,copysignl,long double,"long double, long double"
@@ -1078,12 +1080,6 @@ Function,-,furi_hal_clock_resume_tick,void,
 Function,-,furi_hal_clock_suspend_tick,void,
 Function,-,furi_hal_clock_switch_to_hsi,void,
 Function,-,furi_hal_clock_switch_to_pll,void,
-Function,-,furi_hal_compress_alloc,FuriHalCompress*,uint16_t
-Function,-,furi_hal_compress_decode,_Bool,"FuriHalCompress*, uint8_t*, size_t, uint8_t*, size_t, size_t*"
-Function,-,furi_hal_compress_encode,_Bool,"FuriHalCompress*, uint8_t*, size_t, uint8_t*, size_t, size_t*"
-Function,-,furi_hal_compress_free,void,FuriHalCompress*
-Function,-,furi_hal_compress_icon_decode,void,"const uint8_t*, uint8_t**"
-Function,-,furi_hal_compress_icon_init,void,
 Function,+,furi_hal_console_disable,void,
 Function,+,furi_hal_console_enable,void,
 Function,+,furi_hal_console_init,void,
@@ -1638,9 +1634,10 @@ Function,+,gui_view_port_send_to_front,void,"Gui*, ViewPort*"
 Function,+,hal_sd_detect,_Bool,
 Function,+,hal_sd_detect_init,void,
 Function,+,hal_sd_detect_set_low,void,
-Function,+,hmac_sha256_finish,void,"const hmac_sha256_context*, const uint8_t*, uint8_t*"
-Function,+,hmac_sha256_init,void,"hmac_sha256_context*, const uint8_t*"
-Function,+,hmac_sha256_update,void,"const hmac_sha256_context*, const uint8_t*, unsigned"
+Function,+,hex_char_to_hex_nibble,_Bool,"char, uint8_t*"
+Function,+,hex_char_to_uint8,_Bool,"char, char, uint8_t*"
+Function,+,hex_chars_to_uint64,_Bool,"const char*, uint64_t*"
+Function,+,hex_chars_to_uint8,_Bool,"const char*, uint8_t*"
 Function,-,hypot,double,"double, double"
 Function,-,hypotf,float,"float, float"
 Function,-,hypotl,long double,"long double, long double"
@@ -1779,12 +1776,9 @@ Function,-,j1f,float,float
 Function,-,jn,double,"int, double"
 Function,-,jnf,float,"int, float"
 Function,-,jrand48,long,unsigned short[3]
-Function,-,keeloq_get_custom_btn,uint8_t,
-Function,-,keeloq_get_original_btn,uint8_t,
 Function,-,keeloq_reset_kl_type,void,
 Function,-,keeloq_reset_mfname,void,
 Function,-,keeloq_reset_original_btn,void,
-Function,-,keeloq_set_btn,void,uint8_t
 Function,-,l64a,char*,long
 Function,-,labs,long,long
 Function,-,lcong48,void,unsigned short[7]
@@ -2092,10 +2086,6 @@ Function,-,nfca_get_crc16,uint16_t,"uint8_t*, uint16_t"
 Function,-,nfca_signal_alloc,NfcaSignal*,
 Function,-,nfca_signal_encode,void,"NfcaSignal*, uint8_t*, uint16_t, uint8_t*"
 Function,-,nfca_signal_free,void,NfcaSignal*
-Function,-,nice_flors_get_custom_btn,uint8_t,
-Function,-,nice_flors_get_original_btn,uint8_t,
-Function,-,nice_flors_reset_original_btn,void,
-Function,-,nice_flors_set_btn,void,uint8_t
 Function,+,notification_internal_message,void,"NotificationApp*, const NotificationSequence*"
 Function,+,notification_internal_message_block,void,"NotificationApp*, const NotificationSequence*"
 Function,+,notification_message,void,"NotificationApp*, const NotificationSequence*"
@@ -2109,8 +2099,8 @@ Function,+,onewire_host_read_bit,_Bool,OneWireHost*
 Function,+,onewire_host_read_bytes,void,"OneWireHost*, uint8_t*, uint16_t"
 Function,+,onewire_host_reset,_Bool,OneWireHost*
 Function,+,onewire_host_reset_search,void,OneWireHost*
-Function,+,onewire_host_search,uint8_t,"OneWireHost*, uint8_t*, OneWireHostSearchMode"
-Function,+,onewire_host_skip,void,OneWireHost*
+Function,+,onewire_host_search,_Bool,"OneWireHost*, uint8_t*, OneWireHostSearchMode"
+Function,+,onewire_host_set_overdrive,void,"OneWireHost*, _Bool"
 Function,+,onewire_host_start,void,OneWireHost*
 Function,+,onewire_host_stop,void,OneWireHost*
 Function,+,onewire_host_target_search,void,"OneWireHost*, uint8_t"
@@ -2124,6 +2114,7 @@ Function,+,onewire_slave_receive_bit,_Bool,OneWireSlave*
 Function,+,onewire_slave_send,_Bool,"OneWireSlave*, const uint8_t*, size_t"
 Function,+,onewire_slave_send_bit,_Bool,"OneWireSlave*, _Bool"
 Function,+,onewire_slave_set_command_callback,void,"OneWireSlave*, OneWireSlaveCommandCallback, void*"
+Function,+,onewire_slave_set_overdrive,void,"OneWireSlave*, _Bool"
 Function,+,onewire_slave_set_reset_callback,void,"OneWireSlave*, OneWireSlaveResetCallback, void*"
 Function,+,onewire_slave_set_result_callback,void,"OneWireSlave*, OneWireSlaveResultCallback, void*"
 Function,+,onewire_slave_start,void,OneWireSlave*
@@ -2462,10 +2453,6 @@ Function,+,scene_manager_search_and_switch_to_previous_scene_one_of,_Bool,"Scene
 Function,+,scene_manager_set_scene_state,void,"SceneManager*, uint32_t, uint32_t"
 Function,+,scene_manager_stop,void,SceneManager*
 Function,+,sd_api_get_fs_type_text,const char*,SDFsType
-Function,-,secplus2_get_custom_btn,uint8_t,
-Function,-,secplus2_get_original_btn,uint8_t,
-Function,-,secplus2_reset_original_btn,void,
-Function,-,secplus2_set_btn,void,uint8_t
 Function,-,secure_getenv,char*,const char*
 Function,-,seed48,unsigned short*,unsigned short[3]
 Function,-,select,int,"int, fd_set*, fd_set*, fd_set*, timeval*"
@@ -2501,10 +2488,6 @@ Function,-,siprintf,int,"char*, const char*, ..."
 Function,-,siscanf,int,"const char*, const char*, ..."
 Function,-,sniprintf,int,"char*, size_t, const char*, ..."
 Function,+,snprintf,int,"char*, size_t, const char*, ..."
-Function,-,somfy_telis_get_custom_btn,uint8_t,
-Function,-,somfy_telis_get_original_btn,uint8_t,
-Function,-,somfy_telis_reset_original_btn,void,
-Function,-,somfy_telis_set_btn,void,uint8_t
 Function,-,sprintf,int,"char*, const char*, ..."
 Function,-,sqrt,double,double
 Function,-,sqrtf,float,float
@@ -2661,6 +2644,12 @@ Function,+,subghz_block_generic_deserialize,SubGhzProtocolStatus,"SubGhzBlockGen
 Function,+,subghz_block_generic_deserialize_check_count_bit,SubGhzProtocolStatus,"SubGhzBlockGeneric*, FlipperFormat*, uint16_t"
 Function,+,subghz_block_generic_get_preset_name,void,"const char*, FuriString*"
 Function,+,subghz_block_generic_serialize,SubGhzProtocolStatus,"SubGhzBlockGeneric*, FlipperFormat*, SubGhzRadioPreset*"
+Function,-,subghz_custom_btn_get,uint8_t,
+Function,-,subghz_custom_btn_get_original,uint8_t,
+Function,-,subghz_custom_btn_set,void,uint8_t
+Function,-,subghz_custom_btn_set_max,void,uint8_t
+Function,-,subghz_custom_btn_set_original,void,uint8_t
+Function,-,subghz_custom_btns_reset,void,
 Function,+,subghz_environment_alloc,SubGhzEnvironment*,
 Function,+,subghz_environment_free,void,SubGhzEnvironment*
 Function,+,subghz_environment_get_alutech_at_4n_rainbow_table_file_name,const char*,SubGhzEnvironment*
@@ -4451,6 +4440,7 @@ Function,-,uECC_sign_deterministic,int,"const uint8_t*, const uint8_t*, unsigned
 Function,-,uECC_valid_public_key,int,"const uint8_t*, uECC_Curve"
 Function,-,uECC_verify,int,"const uint8_t*, const uint8_t*, unsigned, const uint8_t*, uECC_Curve"
 Function,-,ucStreamBufferGetStreamBufferType,uint8_t,StreamBufferHandle_t
+Function,+,uint8_to_hex_chars,void,"const uint8_t*, uint8_t*, int"
 Function,-,ulTaskGenericNotifyTake,uint32_t,"UBaseType_t, BaseType_t, TickType_t"
 Function,-,ulTaskGenericNotifyValueClear,uint32_t,"TaskHandle_t, UBaseType_t, uint32_t"
 Function,-,ulTaskGetIdleRunTimeCounter,uint32_t,

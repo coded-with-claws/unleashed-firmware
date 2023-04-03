@@ -4,7 +4,7 @@
 #include "../../../ui/scene_director.h"
 #include "../../cli_helpers.h"
 
-#define TOTP_CLI_COMMAND_NOTIFICATION_ARG_METHOD "method"
+#define TOTP_CLI_COMMAND_NOTIFICATION_ARG_METHOD "notification"
 #define TOTP_CLI_COMMAND_NOTIFICATION_METHOD_NONE "none"
 #define TOTP_CLI_COMMAND_NOTIFICATION_METHOD_SOUND "sound"
 #define TOTP_CLI_COMMAND_NOTIFICATION_METHOD_VIBRO "vibro"
@@ -23,9 +23,9 @@ void totp_cli_command_notification_docopt_usage() {
 void totp_cli_command_notification_docopt_arguments() {
     TOTP_CLI_PRINTF(
         "  " TOTP_CLI_COMMAND_NOTIFICATION_ARG_METHOD
-        "      Notification method to be set. Must be one of [" TOTP_CLI_COMMAND_NOTIFICATION_METHOD_NONE
+        "  Notification method to be set. Must be one of: " TOTP_CLI_COMMAND_NOTIFICATION_METHOD_NONE
         ", " TOTP_CLI_COMMAND_NOTIFICATION_METHOD_SOUND
-        ", " TOTP_CLI_COMMAND_NOTIFICATION_METHOD_VIBRO "]\r\n");
+        ", " TOTP_CLI_COMMAND_NOTIFICATION_METHOD_VIBRO "\r\n");
 }
 
 static void totp_cli_command_notification_print_method(NotificationMethod method, char* color) {
