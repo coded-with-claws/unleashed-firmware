@@ -1,11 +1,11 @@
 #include "common_command_arguments.h"
 #include <lib/toolbox/args.h>
 
-inline void totp_cli_printf_missed_argument_value(char* arg) {
+void totp_cli_printf_missed_argument_value(char* arg) {
     TOTP_CLI_PRINTF_ERROR("Missed or incorrect value for argument \"%s\"\r\n", arg);
 }
 
-inline void totp_cli_printf_unknown_argument(const FuriString* arg) {
+void totp_cli_printf_unknown_argument(const FuriString* arg) {
     TOTP_CLI_PRINTF("Unknown argument \"%s\"\r\n", furi_string_get_cstr(arg));
 }
 
@@ -105,6 +105,35 @@ bool totp_cli_try_read_unsecure_flag(const FuriString* arg, bool* parsed, bool* 
     if(furi_string_cmpi_str(arg, TOTP_CLI_COMMAND_ARG_UNSECURE_PREFIX) == 0) {
         *unsecure_flag = false;
         *parsed = true;
+        return true;
+    }
+
+    return false;
+}
+
+bool totp_cli_try_read_plain_token_secret_encoding(
+    FuriString* arg,
+    FuriString* args,
+    bool* parsed,
+    PlainTokenSecretEncoding* secret_encoding) {
+    if(furi_string_cmpi_str(arg, TOTP_CLI_COMMAND_ARG_SECRET_ENCODING_PREFIX) == 0) {
+        if(!args_read_string_and_trim(args, arg)) {
+            totp_cli_printf_missed_argument_value(TOTP_CLI_COMMAND_ARG_SECRET_ENCODING_PREFIX);
+        } else {
+            if(furi_string_cmpi_str(arg, PLAIN_TOKEN_ENCODING_BASE32_NAME) == 0) {
+                *secret_encoding = PlainTokenSecretEncodingBase32;
+                *parsed = true;
+            } else if(furi_string_cmpi_str(arg, PLAIN_TOKEN_ENCODING_BASE64_NAME) == 0) {
+                *secret_encoding = PlainTokenSecretEncodingBase64;
+                *parsed = true;
+            } else {
+                TOTP_CLI_PRINTF_ERROR(
+                    "\"%s\" is incorrect value for argument \"" TOTP_CLI_COMMAND_ARG_SECRET_ENCODING_PREFIX
+                    "\"\r\n",
+                    furi_string_get_cstr(arg));
+            }
+        }
+
         return true;
     }
 

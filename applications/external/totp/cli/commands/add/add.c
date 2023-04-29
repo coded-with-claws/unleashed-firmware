@@ -1,13 +1,83 @@
 #include "add.h"
 #include <stdlib.h>
 #include <lib/toolbox/args.h>
-#include "../../../lib/list/list.h"
 #include "../../../types/token_info.h"
 #include "../../../services/config/config.h"
 #include "../../../services/convert/convert.h"
 #include "../../cli_helpers.h"
 #include "../../../ui/scene_director.h"
 #include "../../common_command_arguments.h"
+
+struct TotpAddContext {
+    FuriString* args;
+    Cli* cli;
+    uint8_t* iv;
+};
+
+enum TotpIteratorUpdateTokenResultsEx {
+    TotpIteratorUpdateTokenResultInvalidSecret = 1,
+    TotpIteratorUpdateTokenResultCancelled = 2,
+    TotpIteratorUpdateTokenResultInvalidArguments = 3
+};
+
+static TotpIteratorUpdateTokenResult
+    add_token_handler(TokenInfo* token_info, const void* context) {
+    const struct TotpAddContext* context_t = context;
+
+    // Reading token name
+    if(!args_read_probably_quoted_string_and_trim(context_t->args, token_info->name)) {
+        return TotpIteratorUpdateTokenResultInvalidArguments;
+    }
+
+    FuriString* temp_str = furi_string_alloc();
+
+    // Read optional arguments
+    bool mask_user_input = true;
+    PlainTokenSecretEncoding token_secret_encoding = PlainTokenSecretEncodingBase32;
+    while(args_read_string_and_trim(context_t->args, temp_str)) {
+        bool parsed = false;
+        if(!totp_cli_try_read_algo(token_info, temp_str, context_t->args, &parsed) &&
+           !totp_cli_try_read_digits(token_info, temp_str, context_t->args, &parsed) &&
+           !totp_cli_try_read_duration(token_info, temp_str, context_t->args, &parsed) &&
+           !totp_cli_try_read_unsecure_flag(temp_str, &parsed, &mask_user_input) &&
+           !totp_cli_try_read_automation_features(token_info, temp_str, context_t->args, &parsed) &&
+           !totp_cli_try_read_plain_token_secret_encoding(
+               temp_str, context_t->args, &parsed, &token_secret_encoding)) {
+            totp_cli_printf_unknown_argument(temp_str);
+        }
+
+        if(!parsed) {
+            furi_string_free(temp_str);
+            return TotpIteratorUpdateTokenResultInvalidArguments;
+        }
+    }
+
+    // Reading token secret
+    furi_string_reset(temp_str);
+    TOTP_CLI_PRINTF("Enter token secret and confirm with [ENTER]\r\n");
+    if(!totp_cli_read_line(context_t->cli, temp_str, mask_user_input)) {
+        totp_cli_delete_last_line();
+        furi_string_secure_free(temp_str);
+        return TotpIteratorUpdateTokenResultCancelled;
+    }
+
+    totp_cli_delete_last_line();
+
+    bool secret_set = token_info_set_secret(
+        token_info,
+        furi_string_get_cstr(temp_str),
+        furi_string_size(temp_str),
+        token_secret_encoding,
+        context_t->iv);
+
+    furi_string_secure_free(temp_str);
+
+    if(!secret_set) {
+        return TotpIteratorUpdateTokenResultInvalidSecret;
+    }
+
+    return TotpIteratorUpdateTokenResultSuccess;
+}
 
 void totp_cli_command_add_docopt_commands() {
     TOTP_CLI_PRINTF("  " TOTP_CLI_COMMAND_ADD ", " TOTP_CLI_COMMAND_ADD_ALT
@@ -17,11 +87,11 @@ void totp_cli_command_add_docopt_commands() {
 void totp_cli_command_add_docopt_usage() {
     TOTP_CLI_PRINTF(
         "  " TOTP_CLI_COMMAND_NAME
-        " " DOCOPT_REQUIRED(TOTP_CLI_COMMAND_ADD " | " TOTP_CLI_COMMAND_ADD_ALT " | " TOTP_CLI_COMMAND_ADD_ALT2) " " DOCOPT_ARGUMENT(TOTP_CLI_COMMAND_ARG_NAME) " " DOCOPT_OPTIONAL(DOCOPT_OPTION(TOTP_CLI_COMMAND_ARG_ALGO_PREFIX, DOCOPT_ARGUMENT(TOTP_CLI_COMMAND_ARG_ALGO))) " " DOCOPT_OPTIONAL(DOCOPT_OPTION(TOTP_CLI_COMMAND_ARG_DIGITS_PREFIX, DOCOPT_ARGUMENT(TOTP_CLI_COMMAND_ARG_DIGITS))) " " DOCOPT_OPTIONAL(
+        " " DOCOPT_REQUIRED(TOTP_CLI_COMMAND_ADD " | " TOTP_CLI_COMMAND_ADD_ALT " | " TOTP_CLI_COMMAND_ADD_ALT2) " " DOCOPT_ARGUMENT(TOTP_CLI_COMMAND_ARG_NAME) " " DOCOPT_OPTIONAL(DOCOPT_OPTION(TOTP_CLI_COMMAND_ARG_ALGO_PREFIX, DOCOPT_ARGUMENT(TOTP_CLI_COMMAND_ARG_ALGO))) " " DOCOPT_OPTIONAL(DOCOPT_OPTION(TOTP_CLI_COMMAND_ARG_SECRET_ENCODING_PREFIX, DOCOPT_ARGUMENT(TOTP_CLI_COMMAND_ARG_SECRET_ENCODING))) " " DOCOPT_OPTIONAL(
             DOCOPT_OPTION(
-                TOTP_CLI_COMMAND_ARG_DURATION_PREFIX,
+                TOTP_CLI_COMMAND_ARG_DIGITS_PREFIX,
                 DOCOPT_ARGUMENT(
-                    TOTP_CLI_COMMAND_ARG_DURATION))) " " DOCOPT_OPTIONAL(DOCOPT_SWITCH(TOTP_CLI_COMMAND_ARG_UNSECURE_PREFIX)) " " DOCOPT_MULTIPLE(DOCOPT_OPTIONAL(DOCOPT_OPTION(TOTP_CLI_COMMAND_ARG_AUTOMATION_FEATURE_PREFIX, DOCOPT_ARGUMENT(TOTP_CLI_COMMAND_ARG_AUTOMATION_FEATURE)))) "\r\n");
+                    TOTP_CLI_COMMAND_ARG_DIGITS))) " " DOCOPT_OPTIONAL(DOCOPT_OPTION(TOTP_CLI_COMMAND_ARG_DURATION_PREFIX, DOCOPT_ARGUMENT(TOTP_CLI_COMMAND_ARG_DURATION))) " " DOCOPT_OPTIONAL(DOCOPT_SWITCH(TOTP_CLI_COMMAND_ARG_UNSECURE_PREFIX)) " " DOCOPT_MULTIPLE(DOCOPT_OPTIONAL(DOCOPT_OPTION(TOTP_CLI_COMMAND_ARG_AUTOMATION_FEATURE_PREFIX, DOCOPT_ARGUMENT(TOTP_CLI_COMMAND_ARG_AUTOMATION_FEATURE)))) "\r\n");
 }
 
 void totp_cli_command_add_docopt_arguments() {
@@ -35,11 +105,21 @@ void totp_cli_command_add_docopt_options() {
             TOTP_CLI_COMMAND_ARG_ALGO)) "      Token hashing algorithm. Must be one of: " TOTP_TOKEN_ALGO_SHA1_NAME
                                         ", " TOTP_TOKEN_ALGO_SHA256_NAME
                                         ", " TOTP_TOKEN_ALGO_SHA512_NAME
+                                        ", " TOTP_TOKEN_ALGO_STEAM_NAME
                                         " " DOCOPT_DEFAULT(TOTP_TOKEN_ALGO_SHA1_NAME) "\r\n");
     TOTP_CLI_PRINTF("  " DOCOPT_OPTION(
         TOTP_CLI_COMMAND_ARG_DIGITS_PREFIX,
         DOCOPT_ARGUMENT(
-            TOTP_CLI_COMMAND_ARG_DIGITS)) "    Number of digits to generate, one of: 6, 8 " DOCOPT_DEFAULT("6") "\r\n");
+            TOTP_CLI_COMMAND_ARG_DIGITS)) "    Number of digits to generate, one of: 5, 6, 8 " DOCOPT_DEFAULT("6") "\r\n");
+
+    TOTP_CLI_PRINTF("  " DOCOPT_OPTION(
+        TOTP_CLI_COMMAND_ARG_SECRET_ENCODING_PREFIX,
+        DOCOPT_ARGUMENT(
+            TOTP_CLI_COMMAND_ARG_SECRET_ENCODING)) "  Token secret encoding, one of " PLAIN_TOKEN_ENCODING_BASE32_NAME
+                                                   ", " PLAIN_TOKEN_ENCODING_BASE64_NAME
+                                                   " " DOCOPT_DEFAULT(
+                                                       PLAIN_TOKEN_ENCODING_BASE32_NAME) "\r\n");
+
     TOTP_CLI_PRINTF("  " DOCOPT_OPTION(
         TOTP_CLI_COMMAND_ARG_DURATION_PREFIX,
         DOCOPT_ARGUMENT(
@@ -65,84 +145,33 @@ void totp_cli_command_add_docopt_options() {
 }
 
 void totp_cli_command_add_handle(PluginState* plugin_state, FuriString* args, Cli* cli) {
-    FuriString* temp_str = furi_string_alloc();
-    TokenInfo* token_info = token_info_alloc();
-
-    // Reading token name
-    if(!args_read_probably_quoted_string_and_trim(args, temp_str)) {
-        TOTP_CLI_PRINT_INVALID_ARGUMENTS();
-        furi_string_free(temp_str);
-        token_info_free(token_info);
+    if(!totp_cli_ensure_authenticated(plugin_state, cli)) {
         return;
     }
 
-    size_t temp_cstr_len = furi_string_size(temp_str);
-    token_info->name = malloc(temp_cstr_len + 1);
-    furi_check(token_info->name != NULL);
-    strlcpy(token_info->name, furi_string_get_cstr(temp_str), temp_cstr_len + 1);
+    TokenInfoIteratorContext* iterator_context =
+        totp_config_get_token_iterator_context(plugin_state);
 
-    // Read optional arguments
-    bool mask_user_input = true;
-    while(args_read_string_and_trim(args, temp_str)) {
-        bool parsed = false;
-        if(!totp_cli_try_read_algo(token_info, temp_str, args, &parsed) &&
-           !totp_cli_try_read_digits(token_info, temp_str, args, &parsed) &&
-           !totp_cli_try_read_duration(token_info, temp_str, args, &parsed) &&
-           !totp_cli_try_read_unsecure_flag(temp_str, &parsed, &mask_user_input) &&
-           !totp_cli_try_read_automation_features(token_info, temp_str, args, &parsed)) {
-            totp_cli_printf_unknown_argument(temp_str);
-        }
+    TOTP_CLI_LOCK_UI(plugin_state);
 
-        if(!parsed) {
-            TOTP_CLI_PRINT_INVALID_ARGUMENTS();
-            furi_string_free(temp_str);
-            token_info_free(token_info);
-            return;
-        }
-    }
+    struct TotpAddContext add_context = {.args = args, .cli = cli, .iv = &plugin_state->iv[0]};
+    TotpIteratorUpdateTokenResult add_result =
+        totp_token_info_iterator_add_new_token(iterator_context, &add_token_handler, &add_context);
 
-    // Reading token secret
-    furi_string_reset(temp_str);
-    TOTP_CLI_PRINTF("Enter token secret and confirm with [ENTER]\r\n");
-    if(!totp_cli_read_line(cli, temp_str, mask_user_input) ||
-       !totp_cli_ensure_authenticated(plugin_state, cli)) {
-        TOTP_CLI_DELETE_LAST_LINE();
+    if(add_result == TotpIteratorUpdateTokenResultSuccess) {
+        TOTP_CLI_PRINTF_SUCCESS(
+            "Token \"%s\" has been successfully added\r\n",
+            furi_string_get_cstr(
+                totp_token_info_iterator_get_current_token(iterator_context)->name));
+    } else if(add_result == TotpIteratorUpdateTokenResultCancelled) {
         TOTP_CLI_PRINTF_INFO("Cancelled by user\r\n");
-        furi_string_secure_free(temp_str);
-        token_info_free(token_info);
-        return;
-    }
-
-    TOTP_CLI_DELETE_LAST_LINE();
-
-    if(!token_info_set_secret(
-           token_info,
-           furi_string_get_cstr(temp_str),
-           furi_string_size(temp_str),
-           plugin_state->iv)) {
+    } else if(add_result == TotpIteratorUpdateTokenResultInvalidArguments) {
+        totp_cli_print_invalid_arguments();
+    } else if(add_result == TotpIteratorUpdateTokenResultInvalidSecret) {
         TOTP_CLI_PRINTF_ERROR("Token secret seems to be invalid and can not be parsed\r\n");
-        furi_string_secure_free(temp_str);
-        token_info_free(token_info);
-        return;
+    } else if(add_result == TotpIteratorUpdateTokenResultFileUpdateFailed) {
+        totp_cli_print_error_updating_config_file();
     }
 
-    furi_string_secure_free(temp_str);
-
-    bool load_generate_token_scene = false;
-    if(plugin_state->current_scene == TotpSceneGenerateToken) {
-        totp_scene_director_activate_scene(plugin_state, TotpSceneNone, NULL);
-        load_generate_token_scene = true;
-    }
-
-    TOTP_LIST_INIT_OR_ADD(plugin_state->tokens_list, token_info, furi_check);
-    plugin_state->tokens_count++;
-    if(totp_config_file_save_new_token(token_info) == TotpConfigFileUpdateSuccess) {
-        TOTP_CLI_PRINTF_SUCCESS("Token \"%s\" has been successfully added\r\n", token_info->name);
-    } else {
-        TOTP_CLI_PRINT_ERROR_UPDATING_CONFIG_FILE();
-    }
-
-    if(load_generate_token_scene) {
-        totp_scene_director_activate_scene(plugin_state, TotpSceneGenerateToken, NULL);
-    }
+    TOTP_CLI_UNLOCK_UI(plugin_state);
 }
